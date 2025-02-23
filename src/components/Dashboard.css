@@ -1,0 +1,150 @@
+/* Dashboard.css */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f7f7f7;
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2 {
+  text-align: center;
+  font-size: 2rem;
+  color: #333;
+}
+
+h2 {
+  margin-top: 20px;
+}
+
+button {
+  background-color: #008CBA;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+button:hover {
+  background-color: #006f8c;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+select,
+input[type="date"] {
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  margin: 10px 0;
+  width: 250px;
+}
+
+label {
+  display: block;
+  font-size: 16px;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+p {
+  font-size: 14px;
+  color: #555;
+  margin-top: 10px;
+}
+
+/* Table Styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+th {
+  background-color: #009688;
+  color: white;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+tr:hover {
+  background-color: #f1f1f1;
+}
+
+td button {
+  background-color: #4CAF50;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 14px;
+  color: white;
+  margin-right: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+td button:hover {
+  background-color: #45a049;
+}
+
+td button:nth-child(2) {
+  background-color: #f44336;
+}
+
+td button:nth-child(2):hover {
+  background-color: #e53935;
+}
+
+div {
+  padding: 30px;
+  margin: 40px auto;
+  width: 90%;
+  max-width: 1100px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+div > div {
+  margin-bottom: 20px;
+}
+
+div > div > button {
+  float: right;
+}
+
+p a {
+  color: #008CBA;
+  text-decoration: none;
+}
+
+p a:hover {
+  text-decoration: underline;
+}
+
+span {
+  font-weight: bold;
+}
+
