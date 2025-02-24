@@ -14,15 +14,24 @@ function Dashboard() {
   const [onVacation, setOnVacation] = useState(null);
   const [currentWeekStart, setCurrentWeekStart] = useState(null);
   const [currentWeekEnd, setCurrentWeekEnd] = useState(null);
-  const [isModifying, setIsModifying] = useState(false); // Track if we're modifying a record
-  const [modifyRecordId, setModifyRecordId] = useState(null); // Track which record is being modified
-  const [modifyStatus, setModifyStatus] = useState(''); // Track status for modification
+  const [isModifying, setIsModifying] = useState(false);
+  const [modifyRecordId, setModifyRecordId] = useState(null);
+  const [modifyStatus, setModifyStatus] = useState('');
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
+  const [statistics, setStatistics] = useState({ present: 0, absent: 0, late: 0 });
+  const [modificationHistory, setModificationHistory] = useState([]);
 
   useEffect(() => {
-    // Load attendance data from localStorage first
+    // Load attendance data and modification history from localStorage
     const storedAttendance = localStorage.getItem('attendanceData');
+    const storedHistory = localStorage.getItem('modificationHistory');
+
     if (storedAttendance) {
       setAttendanceData(JSON.parse(storedAttendance));
+    }
+    if (storedHistory) {
+      setModificationHistory(JSON.parse(storedHistory));
     }
 
     // Fetch employees from JSON file
@@ -30,7 +39,6 @@ function Dashboard() {
       .then(response => response.json())
       .then(data => {
         setEmployees(data.employees);
-        // If no attendance data exists in localStorage, use the one from JSON
         if (!storedAttendance) {
           setAttendanceData(data.attendance || []);
         }
@@ -128,6 +136,16 @@ function Dashboard() {
     setAttendanceData(newAttendance);
     localStorage.setItem('attendanceData', JSON.stringify(newAttendance));
 
+    // Add to modification history
+    const historyEntry = {
+      id: Date.now(),
+      action: `Responsable ${currentUser.username} a marqué ${employee.name} comme ${status} le ${date}`,
+      timestamp: new Date().toLocaleString(),
+    };
+    const newHistory = [...modificationHistory, historyEntry];
+    setModificationHistory(newHistory);
+    localStorage.setItem('modificationHistory', JSON.stringify(newHistory));
+
     alert(`Attendance record saved successfully! Employee on vacation: ${employee.vacationStart && employee.vacationEnd ? 'Yes' : 'No'}`);
     setSelectedEmployee('');
     setDate('');
@@ -136,25 +154,33 @@ function Dashboard() {
   };
 
   const handleModifyAttendance = (attendanceId) => {
-    setIsModifying(true); 
-    setModifyRecordId(attendanceId); 
+    setIsModifying(true);
+    setModifyRecordId(attendanceId);
     const recordToModify = attendanceData.find(record => record.id === attendanceId);
-    setModifyStatus(recordToModify ? recordToModify.status : 'PRESENT'); // Set current status
+    setModifyStatus(recordToModify ? recordToModify.status : 'PRESENT');
   };
 
-  // Handle status change during modification
   const handleStatusChange = (e) => {
     setModifyStatus(e.target.value);
   };
 
-  // Save modified attendance
   const handleSaveModifiedAttendance = () => {
     if (modifyRecordId === null) return;
-    
+
     const updatedAttendance = [...attendanceData];
     const recordToModify = updatedAttendance.find(record => record.id === modifyRecordId);
-    
+
     if (recordToModify) {
+      // Add to modification history
+      const historyEntry = {
+        id: Date.now(),
+        action: `Responsable ${currentUser.username} a modifié le statut de ${recordToModify.employeeName} en ${modifyStatus} le ${recordToModify.date}`,
+        timestamp: new Date().toLocaleString(),
+      };
+      const newHistory = [...modificationHistory, historyEntry];
+      setModificationHistory(newHistory);
+      localStorage.setItem('modificationHistory', JSON.stringify(newHistory));
+
       recordToModify.status = modifyStatus;
       setAttendanceData(updatedAttendance);
       localStorage.setItem('attendanceData', JSON.stringify(updatedAttendance));
@@ -165,21 +191,51 @@ function Dashboard() {
     }
   };
 
-  // Handle Delete Attendance
   const handleDeleteAttendance = (attendanceId) => {
     const updatedAttendance = attendanceData.filter((record) => record.id !== attendanceId);
-    
+
     const attendanceRecord = attendanceData.find((record) => record.id === attendanceId);
     if (attendanceRecord) {
       if (attendanceRecord.recordedBy === currentUser.id) {
         setAttendanceData(updatedAttendance);
         localStorage.setItem('attendanceData', JSON.stringify(updatedAttendance));
+
+        // Add to modification history
+        const historyEntry = {
+          id: Date.now(),
+          action: `Responsable ${currentUser.username} a supprimé l'enregistrement de ${attendanceRecord.employeeName} pour le ${attendanceRecord.date}`,
+          timestamp: new Date().toLocaleString(),
+        };
+        const newHistory = [...modificationHistory, historyEntry];
+        setModificationHistory(newHistory);
+        localStorage.setItem('modificationHistory', JSON.stringify(newHistory));
+
         alert('Attendance record deleted successfully!');
       } else {
         alert('You do not have permission to delete this record.');
       }
     }
   };
+
+  const calculateStatistics = () => {
+    const filteredData = attendanceData.filter(record => {
+      const recordDate = new Date(record.date);
+      const startDate = customStartDate ? new Date(customStartDate) : currentWeekStart;
+      const endDate = customEndDate ? new Date(customEndDate) : currentWeekEnd;
+      return recordDate >= startDate && recordDate <= endDate;
+    });
+
+    const stats = {
+      present: filteredData.filter(record => record.status === 'PRESENT').length,
+      absent: filteredData.filter(record => record.status === 'ABSENT').length,
+      late: filteredData.filter(record => record.status === 'LATE').length,
+    };
+    setStatistics(stats);
+  };
+
+  useEffect(() => {
+    calculateStatistics();
+  }, [customStartDate, customEndDate, attendanceData]);
 
   return (
     <div>
@@ -189,7 +245,19 @@ function Dashboard() {
         <button onClick={() => { logout(); navigate('/login'); }}>Logout</button>
       </div>
 
-      
+      {/* Résumé statistique */}
+      <h2>Résumé Statistique</h2>
+      <div>
+        <label>Date de début:</label>
+        <input type="date" value={customStartDate} onChange={(e) => setCustomStartDate(e.target.value)} />
+        <label>Date de fin:</label>
+        <input type="date" value={customEndDate} onChange={(e) => setCustomEndDate(e.target.value)} />
+      </div>
+      <div>
+        <p>Présents: {statistics.present}</p>
+        <p>Absents: {statistics.absent}</p>
+        <p>Retards: {statistics.late}</p>
+      </div>
 
       {/* Form to Create Attendance */}
       <h2>Create Attendance Record</h2>
@@ -206,7 +274,6 @@ function Dashboard() {
       <label>Date:</label>
       <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
 
-      {/* Show On Vacation Status */}
       {selectedEmployee && (
         <p style={{ color: onVacation ? 'red' : 'green' }}>
           Employee is {onVacation ? 'on vacation ❌' : 'available ✅'}
@@ -224,8 +291,6 @@ function Dashboard() {
 
       {/* Display Attendance Table */}
       <h2>Attendance Records</h2>
-
-      {/* Week Navigation Buttons */}
       <div>
         <button onClick={handlePreviousWeek}>Previous Week</button>
         <button onClick={handleNextWeek}>Next Week</button>
@@ -240,7 +305,7 @@ function Dashboard() {
             <th>Date</th>
             <th>Status</th>
             <th>On Vacation</th>
-            {currentUser.id === 1 && <th>Actions</th>} {/* Display only for RH1 */}
+            {currentUser.id === 1 && <th>Actions</th>}
           </tr>
         </thead>
         <tbody>
@@ -278,6 +343,25 @@ function Dashboard() {
               <td colSpan="5">No attendance records available</td>
             </tr>
           )}
+        </tbody>
+      </table>
+
+      {/* Historique des modifications */}
+      <h2>Historique des Modifications</h2>
+      <table border="1">
+        <thead>
+          <tr>
+            <th>Action</th>
+            <th>Date et Heure</th>
+          </tr>
+        </thead>
+        <tbody>
+          {modificationHistory.map((entry, index) => (
+            <tr key={index}>
+              <td>{entry.action}</td>
+              <td>{entry.timestamp}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>

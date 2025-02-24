@@ -26,12 +26,47 @@
     "name": "Jane Smith",
     "department": "Marketing",
     "vacationStart": "2025-02-01",
-    "vacationEnd": "2025-02-10"
+    "vacationEnd": "2025-02-28"
   },
   {
     "id": 3,
     "name": "Bob Wilson",
     "department": "Sales",
+    "vacationStart": null,
+    "vacationEnd": null
+  },
+  {
+    "id": 4,
+    "name": "Alice Johnson",
+    "department": "Finance",
+    "vacationStart": null,
+    "vacationEnd": null
+  },
+  {
+    "id": 5,
+    "name": "Tom Brown",
+    "department": "Engineering",
+    "vacationStart": null,
+    "vacationEnd": null
+  },
+  {
+    "id": 6,
+    "name": "Emma Davis",
+    "department": "Marketing",
+    "vacationStart": null,
+    "vacationEnd": null
+  },
+  {
+    "id": 7,
+    "name": "Liam Taylor",
+    "department": "Sales",
+    "vacationStart": null,
+    "vacationEnd": null
+  },
+  {
+    "id": 8,
+    "name": "Sophia Lee",
+    "department": "Finance",
     "vacationStart": null,
     "vacationEnd": null
   }
